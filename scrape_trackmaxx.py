@@ -98,7 +98,6 @@ class ScrapeTrackMaxx:
                     rd.time_seconds = self._time_str_to_seconds(rd.time_str)
                     self._fetch_detail_data(rd)
                     self.data.append(rd)
-                    return True
                 else:
                     return False
         return True
