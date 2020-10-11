@@ -15,6 +15,7 @@ class TimeEntry:
         self.time_str = ''
         self.time_seconds = 0.0
         self.pace = ''
+        self.pace_seconds_per_km = 0.0
         self.overall_rank = ''
         self.category_rank = ''
 
@@ -28,6 +29,10 @@ class TimeEntry:
         else:
             items.append('')
         items.append(self.pace)
+        if self.pace_seconds_per_km:
+            items.append(str(self.pace_seconds_per_km))
+        else:
+            items.append('')
         items.append(self.overall_rank)
         items.append(self.category_rank)
         return ','.join(items)
@@ -50,6 +55,7 @@ class ResultData:
         items.append(self.time_entry.time_str)
         items.append(str(self.time_entry.time_seconds))
         items.append(self.time_entry.pace)
+        items.append(str(self.time_entry.pace_seconds_per_km))
         items.append(self.time_entry.overall_rank)
         items.append(self.overall_total)
         items.append(self.time_entry.category_rank)
@@ -111,6 +117,7 @@ class ScrapeTrackMaxx:
         rd.time_entry.time_seconds = self._time_str_to_seconds(rd.time_entry.time_str)
 
         rd.time_entry.pace = data['participantinfos'][11]['value']
+        rd.time_entry.pace_seconds_per_km = self._time_str_to_seconds(rd.time_entry.pace)
         cat_value = data['participantinfos'][12]['value']
         res = re.match(r'(\d+)\. von (\d+)', cat_value)
         if res:
@@ -165,6 +172,7 @@ class ScrapeTrackMaxx:
                     te.time_str = track['runtime']
                     te.time_seconds = self._time_str_to_seconds(te.time_str)
                     te.pace = track['speed']
+                    te.pace_seconds_per_km = self._time_str_to_seconds(te.pace)
                     te.overall_rank = track['rank2'].replace('.', '')
                     te.category_rank = track['rank1'].replace('.', '')
                 except Exception:
@@ -175,11 +183,11 @@ class ScrapeTrackMaxx:
 scraper = ScrapeTrackMaxx(race_id='gsl20', cat_ids=['bc0b7426-be6d-4edd-8460-936b3c3d5460', 'd6c89c35-e9a9-4b66-a5b5-61e111d3c378'], race_guid='9df022e2-76c6-45cb-9140-f70883fbbb25')
 data = scraper.fetch_data()
 
-header = 'start_number,category,distance_km,time_str,time_seconds,pace,overall_rank,overall_total,category_rank,category_total'
+header = 'start_number,category,distance_km,time_str,time_seconds,pace,pace_seconds_per_km,overall_rank,overall_total,category_rank,category_total'
 if len(data) > 0:
     time_entries = data[0].sub_time_entries
     for i in range(len(time_entries)):
-        header += f',segment_name_{i},segment_distance_km_{i},segment_time_str_{i},segment_time_seconds_{i},segment_pace_{i},segment_overall_rank_{i},segment_category_rank_{i}'
+        header += f',segment_name_{i},segment_distance_km_{i},segment_time_str_{i},segment_time_seconds_{i},segment_pace_{i},segment_pace_seconds_per_km_{i},segment_overall_rank_{i},segment_category_rank_{i}'
 print(header)
 
 for item in data:
