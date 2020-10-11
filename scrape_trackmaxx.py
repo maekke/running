@@ -90,8 +90,7 @@ class ScrapeTrackMaxx:
                 if rd.category != '':
                     rd.category = rd.category.split(':')[0]
                     time = datetime.datetime.strptime(rd.time_str, "%H:%M:%S")
-                    minutes = time.hour * 60 + time.minute
-                    rd.time_seconds = minutes * 60 + time.second
+                    rd.time_seconds = self._datetime_to_seconds(time)
                     self._fetch_detail_data(rd)
                     self.data.append(rd)
                 else:
@@ -110,8 +109,7 @@ class ScrapeTrackMaxx:
         # get the precise time...
         rd.time_entry.time_str = data['participantinfos'][10]['value'].replace(',', '.')
         time = datetime.datetime.strptime(rd.time_entry.time_str, "%H:%M:%S.%f")
-        minutes = time.hour * 60 + time.minute
-        rd.time_entry.time_seconds = minutes * 60 + time.second + time.microsecond / 1e6
+        rd.time_entry.time_seconds = self._datetime_to_seconds(time)
 
         rd.time_entry.pace = data['participantinfos'][11]['value']
         cat_value = data['participantinfos'][12]['value']
@@ -133,6 +131,10 @@ class ScrapeTrackMaxx:
             print(f'problem with parsing data: {data}', file=sys.stderr)
             raise
 
+    def _datetime_to_seconds(self, time):
+        minutes = time.hour * 60 + time.minute
+        return minutes * 60 + time.second + time.microsecond / 1e6
+
     def _time_str_to_seconds(self, time_str):
         # ignore empty values for now
         if time_str is None or time_str == '':
@@ -145,8 +147,7 @@ class ScrapeTrackMaxx:
             time = datetime.datetime.strptime(time_str, "%M:%S")
 
         assert time is not None
-        minutes = time.hour * 60 + time.minute
-        return minutes * 60 + time.second + time.microsecond / 1e6
+        return self._datetime_to_seconds(time)
 
     def _get_sub_track_data(self, data, rd):
         tracks = data['track']
